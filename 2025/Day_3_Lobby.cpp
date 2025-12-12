@@ -4,38 +4,48 @@
 #include <string>
 #include <utility>
 #include <algorithm>
+#include <cstdint>
 
 
-int get_largest_joltage(const std::string& bank);
+using NumType = std::uint64_t;
 
+NumType get_largest_joltage(const std::string& bank);
 
 int main() {
     std::string file_name{"Day_3_Lobby.txt"};
     std::ifstream input_file{file_name};
     std::string line;
-    int total{0};
+    NumType total{0ULL};
     while (std::getline(input_file, line)) {
-        int joltage = get_largest_joltage(line);
+        NumType joltage = get_largest_joltage(line);
         total += joltage;
     }
     std::cout << "total is " << total << std::endl;
     return 0;
 }
 
-int get_largest_joltage(const std::string& bank) {
+NumType get_largest_joltage(const std::string& bank) {
     auto begin_it = bank.begin();
     auto end_it = bank.end();
-    auto tens_digit_it = std::max_element(begin_it, 
-                                              begin_it + bank.length() - 1);
-    auto ones_digit_it = std::max_element(tens_digit_it + 1, end_it);
     std::stringstream joltage_ss;
-    int joltage;
-    if (joltage_ss << *tens_digit_it << *ones_digit_it
-            && joltage_ss >> joltage) {
+    auto start_pos = begin_it;
+    auto joltage_size = 12;
+    for (auto i{joltage_size - 1}; i >= 0; --i) {
+        auto digit_it = std::max_element(start_pos, 
+                                         begin_it + bank.length() - i);
+        if (joltage_ss << *digit_it) {
+            auto pos = std::distance(begin_it, digit_it);
+            start_pos = begin_it + (1 + pos);
+        }
+        else {
+            throw std::runtime_error("Invalid joltage");
+        }
+    }
+    NumType joltage;
+    if (joltage_ss >> joltage) {
         return joltage;
     }
     else {
-        std::cout << "Parse Error." << std::endl;
-        std::exit(EXIT_FAILURE);
+        throw std::runtime_error("Invalid joltage");
     }
 }
