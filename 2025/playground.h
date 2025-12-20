@@ -32,8 +32,11 @@ using Circuits = std::vector<Circuit>;
 
 void get_data(std::ifstream& file, Positions& positions);
 void sort_data(PriorityQueue& pq, const Positions& positions);
+std::set<Position> get_unconnected_positions(const Positions& positions);
 void print_closest_points(PriorityQueue pq, int k);
-void connect_pairs(PriorityQueue& pq, Circuits& circuits, int number_of_pairs);
+std::pair<Position, Position> create_single_circuit(
+                   PriorityQueue& pq, Circuits& circuits,
+                   std::set<Position>& unconnected_positions);
 size_t get_circuit_id(const Position& p, const Circuits& circuits);
 void merge_two_circuits(Circuits& circuits, size_t min_id, size_t max_id);
 void print_circuits_info(const Circuits& circuits);

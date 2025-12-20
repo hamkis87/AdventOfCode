@@ -69,8 +69,8 @@ void print_closest_points(PriorityQueue pq, int k) {
     }
 }
 
-void connect_pairs(PriorityQueue& pq, Circuits& circuits, 
-                   int number_of_pairs) {
+std::pair<Position, Position> create_single_circuit(PriorityQueue& pq, Circuits& circuits, 
+                   std::set<Position>& unconnected_positions) {
     auto [pair, _] = pq.top();
     auto [p1, p2] = pair;
     Circuit c;
@@ -78,8 +78,11 @@ void connect_pairs(PriorityQueue& pq, Circuits& circuits,
     c.insert(p2);
     circuits.push_back(c);
     pq.pop();
+    unconnected_positions.erase(p1);
+    unconnected_positions.erase(p2);
     int i{1};
-    while (!pq.empty() && i < number_of_pairs) {
+    std::pair<Position, Position> last_connected;
+    while (!pq.empty() && !unconnected_positions.empty()) {
         ++i;
         auto [pair, _] = pq.top();
         auto [p1, p2] = pair;
@@ -97,22 +100,31 @@ void connect_pairs(PriorityQueue& pq, Circuits& circuits,
                     auto min_id = std::min(p1_circuit_id, p2_circuit_id);
                     auto max_id = std::max(p1_circuit_id, p2_circuit_id);
                     merge_two_circuits(circuits, min_id, max_id);
+                    last_connected = std::make_pair(p1, p2);
                 }
             }
             else {
                 circuits.at(p1_circuit_id).insert(p2);
+                last_connected = std::make_pair(p1, p2);
+                unconnected_positions.erase(p2);
             }
         }
         else if (p2_is_connected) {
-            circuits.at(p2_circuit_id).insert(p1);                     
+            circuits.at(p2_circuit_id).insert(p1);
+            last_connected = std::make_pair(p1, p2);
+            unconnected_positions.erase(p1);                     
         }
         else {
             Circuit c;
             c.insert(p1);
             c.insert(p2);
             circuits.push_back(c);
+            last_connected = std::make_pair(p1, p2);
+            unconnected_positions.erase(p1);
+            unconnected_positions.erase(p2);
         }
     }
+    return last_connected;
 }
 
 size_t get_circuit_id(const Position& p, const Circuits& circuits) {
@@ -153,4 +165,12 @@ size_t get_result(const Circuits& circuits) {
     size_t size2 = circuits.at(1).size();
     size_t size3 = circuits.at(2).size();
     return size1 * size2 * size3;
+}
+
+std::set<Position> get_unconnected_positions(const Positions& positions) {
+    std::set<Position> unconnected_positions;
+    for (const auto& p: positions) {
+        unconnected_positions.insert(p);
+    }
+    return unconnected_positions;
 }

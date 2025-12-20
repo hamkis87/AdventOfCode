@@ -2,23 +2,23 @@
 #include <fstream>
 #include <string>
 #include <queue>
+#include <cassert>
 #include "playground.h"
 
 
 int main() {
     std::string file_name{"Day_8_input.txt"};
-    //std::string file_name{"Day_8_test.txt"};
     std::ifstream file{file_name};
     Positions positions;
     get_data(file, positions);
     PriorityQueue pq;
     sort_data(pq, positions);
-    PriorityQueue pq2{pq};
+    std::set<Position> unconnected_positions{get_unconnected_positions(positions)};
     Circuits circuits;
     int number_of_pairs{1000};
-    connect_pairs(pq, circuits, number_of_pairs);
-    sort_circuits(circuits);
-    size_t result = get_result(circuits);
-    std::cout << "result is " << result << std::endl;
+    auto [p1, p2] = create_single_circuit(pq, circuits, unconnected_positions);
+    assert(circuits.size() == 1);
+    auto result = p1.x * p2.x;
+    std::cout << "result = " << result << std::endl; 
     return 0;
 }
